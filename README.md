@@ -11,4 +11,6 @@ download the last 100 items in the playlist.
 
 	$ sqlite ./lounge-radio.sqlite3 < schema.sql
 	
-.
+## run
+
+	./httpd
