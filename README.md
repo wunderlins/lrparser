@@ -8,9 +8,10 @@ download the last 100 items in the playlist.
 - git clone git@github.com:wunderlins/lrparser.git
 - run `./crontab.sh` to install the crontab
 - create databse:
+
 	$ sqlite ./lounge-radio.sqlite3 "CREATE TABLE playlist(
    id INTEGER PRIMARY KEY AUTOINCREMENT,
-   dt INTEGER, -- unix timestamp
+   dt INTEGER,
    song TEXT,
    artist TEXT,
    album TEXT
