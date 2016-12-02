@@ -9,12 +9,6 @@ download the last 100 items in the playlist.
 - run `./crontab.sh` to install the crontab
 - create databse:
 
-	$ sqlite ./lounge-radio.sqlite3 "CREATE TABLE playlist(
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		dt INTEGER, -- unix timestamp
-		song TEXT,
-		artist TEXT,
-		album TEXT
-	);"
+	$ sqlite ./lounge-radio.sqlite3 < schema.sql
 
 
