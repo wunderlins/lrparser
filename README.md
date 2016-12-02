@@ -16,3 +16,5 @@ download the last 100 items in the playlist.
 		artist TEXT,
 		album TEXT
 	);"
+
+
