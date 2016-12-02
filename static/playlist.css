@@ -1,0 +1,23 @@
+body {
+	font-family: sans, helvetica, arial;
+}
+
+.playlist .gmicon {
+	height: 2em;
+}
+
+table.playlist {
+	border-collapse: collapse;
+}
+
+.playlist tr:nth-child(even) {
+	background-color: #EEE;
+}
+
+.playlist td {
+	vertical-align: top;
+}
+
+.playlist th, .playlist td {
+	padding: 0.3em;
+}

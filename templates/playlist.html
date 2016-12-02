@@ -1,0 +1,35 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>l-r.com playlist</title>
+	<link rel="stylesheet" href="static/playlist.css"> 
+</head>
+
+<body>
+Last Updated: {{lastupdate}}
+<table class="playlist">
+	<thead>
+		<tr><th></th>
+		<th>date</th>
+		<th>song</th>
+		<th>artist</th>
+		<th>album</th>
+	</thead>
+	<tbody>
+		{% for row in records %}
+		<tr>
+			<td><a target="google_music" href="https://play.google.com/music/listen?u=0#/sr/{{row[1]}}">
+				<img class="gmicon" src="static/Google_Play_Music.0.0.jpg" alt="Search Google Music" /></td>
+			<td>{{row[2]}}</td>
+			<td>{{row[3]}}</td>
+			<td>{{row[4]}}</td>
+			<td>{{row[5]}}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+</body>
+</html>

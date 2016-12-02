@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+import os
 from flask import Flask
 from flask import Response
 from flask import render_template
@@ -32,10 +33,15 @@ def csv():
 		
 @app.route('/')
 def playlist():
+	
+	fp = open("lastupdate.txt", "r")
+	lastupdate = fp.read()
+	fp.close()
+	
 	con = sqlite3.connect(db)
 	cur = con.cursor()
 	
-	sql = "SELECT * FROM playlist ORDER BY dt DESC LIMIT %d" % 20
+	sql = "SELECT * FROM playlist ORDER BY dt DESC LIMIT %d" % 200
 	cur.execute(sql)
 	
 	res = cur.fetchall()
@@ -44,14 +50,26 @@ def playlist():
 		r = []
 		r.append(str(row[0]))
 		r.append(quote_plus(row[2].encode('utf8') + " " + row[3].encode('utf8')))
-		r.append(str(datetime.fromtimestamp(row[1])))
+		r.append(str(datetime.fromtimestamp(row[1]).strftime('%d.%m.%y %H:%M')))
 		r.append(unicode(row[2]))
 		r.append(unicode(row[3]))
 		r.append(unicode(row[4]))
 		records.append(r)
 	
 	con.close()
-	return render_template('playlist.html', records=records)
+	return render_template('playlist.html', records=records, lastupdate=lastupdate)
 		
 if __name__ == "__main__":
-	app.run()
+	
+	# observe template and static file changes 
+	extra_dirs = ['static', 'templates',]
+	extra_files = extra_dirs[:]
+	for extra_dir in extra_dirs:
+		for dirname, dirs, files in os.walk(extra_dir):
+			for filename in files:
+				filename = os.path.join(dirname, filename)
+				if os.path.isfile(filename):
+					extra_files.append(filename)
+
+
+	app.run(debug=True, extra_files=extra_files) 
