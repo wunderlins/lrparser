@@ -1,0 +1,119 @@
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+
+from urllib2 import urlopen
+from uuid import uuid4
+from os import remove
+from lxml import etree
+from datetime import datetime
+import sqlite3
+
+DEBUG = 0 # 0 to disable
+url = "http://www.lounge-radio.com/code/pushed_files/recently.html"
+base_folder = "/tmp"
+db = "./lounge-radio.sqlite3"
+
+"""
+CREATE TABLE playlist(
+   id INTEGER PRIMARY KEY AUTOINCREMENT,
+   dt INTEGER, -- unix timestamp
+   song TEXT,
+   artist TEXT,
+   album TEXT
+);
+"""
+
+
+class scraper:
+	fd = None
+	uuid = None
+	
+	@staticmethod
+	def filename():
+		return base_folder + "/lparser-" + str(scraper.uuid) + ".html"
+
+	@staticmethod
+	def log(msg):
+		print msg
+	
+	@staticmethod
+	def close():
+		if scraper.fd != None:
+			scraper.fd.close()
+		
+		if not DEBUG:
+			remove(scraper.filename())
+	
+	@staticmethod
+	def fetch():
+		if scraper.uuid == None:
+			scraper.uuid = uuid4()
+		
+		ud = urlopen(url)
+		scraper.log("Temp file: %s" % scraper.filename())
+		scraper.fd = open(scraper.filename(), "wb+")
+		buffer = ""
+		while True:
+			buffer = ud.read(1024)
+		
+			if buffer == "":
+				break
+			
+			scraper.fd.write(buffer)
+	
+		ud.close()
+		scraper.fd.seek(0)
+		return scraper.fd
+	
+	@staticmethod
+	def parse(res):
+		ret = []
+		c=0
+		for t in res:
+			str = t.attrib['title'].encode('utf-8')
+			aStr = str.split(" played @ ")
+			aStrTmp = aStr[1].split(". from Album: ")
+			aStr[1] = aStrTmp[0] 
+			aStr.append(aStrTmp[1])
+			song_band = aStr[0].split(" by ")
+			dt = datetime.strptime(aStr[1], '%d.%m.%Y %H:%M:%S')
+			rec = [dt, song_band[0], song_band[1], aStr[2]]
+		
+			#print rec
+			ret.append(rec)
+			c = c + 1
+		return ret
+	
+def lxml2str(tree):
+	return etree.tostring(tree, pretty_print=True, method="html")
+	
+if __name__ == "__main__":
+	
+	# fetch data
+	fd = scraper.fetch()
+	
+	# parse html
+	parser = etree.HTMLParser()
+	tree = etree.parse(fd, parser)
+	res = tree.getroot().xpath('//tbody[@class="table"]')
+	#print str(len(res)) + "\n\n"
+	data = scraper.parse(res)	
+	#print data
+	scraper.close()
+	
+	# insert data into database
+	con = sqlite3.connect(db)
+	cur = con.cursor()
+	
+	# insert only if the timestamp is unknown
+	sql = "INSERT INTO playlist (dt, song, artist, album)" \
+	      "SELECT ?, ?, ?, ? " \
+	      "WHERE NOT EXISTS(SELECT 1 FROM playlist WHERE dt = %d)"
+	for rec in data:
+		d = (int(rec[0].strftime("%s")), rec[1].decode("utf-8"), rec[2].decode("utf-8"), rec[3].decode("utf-8"))
+		#print sql % (d[0])
+		cur.execute(sql % (d[0]), d)
+	
+	con.commit()
+	con.close()
+	
