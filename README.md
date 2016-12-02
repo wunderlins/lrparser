@@ -10,5 +10,5 @@ download the last 100 items in the playlist.
 - create databse:
 
 	$ sqlite ./lounge-radio.sqlite3 < schema.sql
-
-
+	
+.
