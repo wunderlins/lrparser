@@ -10,9 +10,9 @@ download the last 100 items in the playlist.
 - create databse:
 
 	$ sqlite ./lounge-radio.sqlite3 "CREATE TABLE playlist(
-   id INTEGER PRIMARY KEY AUTOINCREMENT,
-   dt INTEGER,
-   song TEXT,
-   artist TEXT,
-   album TEXT
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		dt INTEGER, -- unix timestamp
+		song TEXT,
+		artist TEXT,
+		album TEXT
 	);"
