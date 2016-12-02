@@ -1,18 +1,21 @@
 #!/usr/bin/env python
+# -*- coding: UTF-8 -*-
 
 from flask import Flask
 from flask import Response
 import sqlite3
+from datetime import datetime
+from urllib import quote_plus
+from config import *
 
 app = Flask(__name__)
-db = "./lounge-radio.sqlite3"
 
 @app.route('/csv')
-def list():
+def csv():
 	con = sqlite3.connect(db)
 	cur = con.cursor()
 	
-	sql = "SELECT * FROM playlist ORDER BY dt DESC"
+	sql = "SELECT * FROM playlist ORDER BY dt DESC LIMIT %d" % limit
 	cur.execute(sql)
 	
 	buffer = "id;unix-tst;title;artist;album\n"
@@ -25,6 +28,35 @@ def list():
 		          unicode(row[2]) + "\";\"" + unicode(row[3]) + "\";\"" + "\n"
 	
 	return Response(buffer, mimetype='text/plain')
+		
+@app.route('/')
+def playlist():
+	con = sqlite3.connect(db)
+	cur = con.cursor()
+	
+	sql = "SELECT * FROM playlist ORDER BY dt DESC LIMIT %d" % 20
+	cur.execute(sql)
+	
+	buffer = "<table>"
+	buffer += "<thead><tr><th>id</th><th>date</th><th>song</th><th>artist</th><th>album</th></thead>"
+	buffer += "<tbody>"
+	while True:
+		row = cur.fetchone()
+		if row == None:
+			break
+		
+		buffer += "<tr>"
+		buffer += "<td>" 
+		buffer += "<a target='google_music' href='https://play.google.com/music/listen?u=0#/sr/%s'>" % \
+			quote_plus(row[2].encode('utf8') + " " + row[3].encode('utf8'))
+		buffer += str(row[0]) + "</a></td>"
+		buffer += "<td>" + str(datetime.fromtimestamp(row[1])) + "</td>"
+		buffer += "<td>" + unicode(row[2]) + "</td>"
+		buffer += "<td>" + unicode(row[3]) + "</td>"
+		buffer += "<td>" + unicode(row[4]) + "</td>"
+		buffer += "</tr>"
+	
+	return Response(buffer + "</tbody></table>", mimetype='text/html')
 		
 if __name__ == "__main__":
 	app.run()

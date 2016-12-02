@@ -7,22 +7,7 @@ from os import remove
 from lxml import etree
 from datetime import datetime
 import sqlite3
-
-DEBUG = 0 # 0 to disable
-url = "http://www.lounge-radio.com/code/pushed_files/recently.html"
-base_folder = "/tmp"
-db = "./lounge-radio.sqlite3"
-
-"""
-CREATE TABLE playlist(
-   id INTEGER PRIMARY KEY AUTOINCREMENT,
-   dt INTEGER, -- unix timestamp
-   song TEXT,
-   artist TEXT,
-   album TEXT
-);
-"""
-
+from config import *
 
 class scraper:
 	fd = None
