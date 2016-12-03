@@ -12,13 +12,21 @@ from config import *
 
 app = Flask(__name__)
 
-@app.route('/csv')
-def csv():
+def dbconn():
 	con = sqlite3.connect(db)
 	cur = con.cursor()
+	return (con, cur)	
 	
-	sql = "SELECT * FROM playlist ORDER BY dt DESC LIMIT %d" % limit
+def get_data(cur, step=20, start=0):
+	sql = "SELECT * FROM playlist ORDER BY dt DESC LIMIT %d OFFSET %d" % (step, start)
 	cur.execute(sql)
+
+@app.route('/csv')
+def csv():
+	con, cur = dbconn()
+	
+	con, cur = dbconn()
+	get_data(cur, step=limit)	
 	
 	buffer = "id;unix-tst;title;artist;album\n"
 	
@@ -30,19 +38,26 @@ def csv():
 		          unicode(row[2]) + "\";\"" + unicode(row[3]) + "\";\"" + "\n"
 	
 	return Response(buffer, mimetype='text/plain')
+
+
+@app.route('/cover/<int:id>')
+def cover(id):
+	con, cur = dbconn()
+	sql = "SELECT size, contenttype, data FROM covers WHERE id = ?"
+	cur.execute(sql, (id,))
+	rec = cur.fetchone()
+	
+	return Response(rec[2], mimetype=rec[1])
 		
 @app.route('/')
 def playlist():
 	
-	fp = open("lastupdate.txt", "r")
+	fp = open(last_update, "r")
 	lastupdate = fp.read()
 	fp.close()
 	
-	con = sqlite3.connect(db)
-	cur = con.cursor()
-	
-	sql = "SELECT * FROM playlist ORDER BY dt DESC LIMIT %d" % 200
-	cur.execute(sql)
+	con, cur = dbconn()
+	get_data(cur, step=200)	
 	
 	res = cur.fetchall()
 	records = []

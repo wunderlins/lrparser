@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-import os
-from urllib2 import urlopen
+import os, sys
+from urllib2 import urlopen, HTTPError
 from uuid import uuid4
 from os import remove
 from lxml import etree
 from datetime import datetime
 import sqlite3
 from config import *
+import magic
+from urllib import quote_plus, quote
+
+con = sqlite3.connect(db)
+cur = con.cursor()
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -71,9 +76,74 @@ class scraper:
 		
 			#print rec
 			ret.append(rec)
+			
+			#cover = t.xpath('//img[@class="playlistcover"]')
+			cover = t.find("tr/td/img[@class='playlistcover']")
+			url = cover_url + quote(cover.attrib["src"])
+			#print url
+			id = scraper.download_file(url)
+			rec.append(id)
+			#for img in cover:
+			#	print img.attrib["src"]
+			
 			c = c + 1
 		return ret
 	
+	@staticmethod
+	def download_file(url):
+		""" download image and insert it into covers table_name
+	
+		will return the id of the image in covers table """
+		orig_file = url.split("/")[-1]
+	
+		# check if we already have it
+		sql = "SELECT id FROM covers WHERE name=?"
+		res = cur.execute(sql, (orig_file,))
+		id = cur.fetchone()
+	
+		# we already have it
+		if id != None:
+			return id[0]
+		
+		try:
+			ud = urlopen(url)
+		except HTTPError:
+			return -1
+
+		uuid = uuid4()
+		filename = base_folder + "/lparser-" + str(uuid) + ".jpg"
+		fd = open(filename, "wb+")
+		buffer = ""
+		content = ""
+		while True:
+			buffer = ud.read(1024)
+			content += buffer
+
+			if buffer == "":
+				break
+	
+			fd.write(buffer)
+
+		ud.close()
+		size = fd.tell()
+		#fd.seek(0)
+		fd.close()
+
+		mime = magic.Magic(mime=True)
+		
+		rec = [filename, size, orig_file, mime.from_file(filename), content]
+		
+		sql = "INSERT INTO covers (name, contenttype, size, data) VALUES (?, ?, ?, ?)"
+		cur.execute(sql, (rec[2], rec[3], rec[1], sqlite3.Binary(rec[4])))
+		con.commit()
+
+		if not DEBUG:
+			remove(filename)
+			
+		return cur.lastrowid
+		#return [filename, size, orig_file, mime.from_file(filename), content]
+
+
 def lxml2str(tree):
 	return etree.tostring(tree, pretty_print=True, method="html")
 	
@@ -96,11 +166,12 @@ if __name__ == "__main__":
 	cur = con.cursor()
 	
 	# insert only if the timestamp is unknown
-	sql = "INSERT INTO playlist (dt, song, artist, album)" \
-	      "SELECT ?, ?, ?, ? " \
+	sql = "INSERT INTO playlist (dt, song, artist, album, cover_id)" \
+	      "SELECT ?, ?, ?, ?, ? " \
 	      "WHERE NOT EXISTS(SELECT 1 FROM playlist WHERE dt = %d)"
 	for rec in data:
-		d = (int(rec[0].strftime("%s")), rec[1].decode("utf-8"), rec[2].decode("utf-8"), rec[3].decode("utf-8"))
+		d = (int(rec[0].strftime("%s")), rec[1].decode("utf-8"), \
+		     rec[2].decode("utf-8"), rec[3].decode("utf-8"), rec[4])
 		#print sql % (d[0])
 		cur.execute(sql % (d[0]), d)
 	
@@ -110,4 +181,4 @@ if __name__ == "__main__":
 	fp = open(last_update, "w")
 	fp.write(str(datetime.now()).split(".")[0])
 	fp.close()
-	
+

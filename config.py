@@ -17,6 +17,8 @@ CREATE TABLE playlist(
 
 DEBUG = 0 # 0 to disable
 url = "http://www.lounge-radio.com/code/pushed_files/recently.html"
+cover_url = "http://www.lounge-radio.com/code/pushed_files/"
 base_folder = "/tmp"
 db = "./lounge-radio.sqlite3"
 limit = 100
+last_update = "lastupdate.txt"
