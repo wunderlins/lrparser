@@ -7,6 +7,7 @@ from flask import Response
 from flask import render_template
 from flask import abort
 from flask import request
+from flask import jsonify
 
 import sqlite3
 from datetime import datetime
@@ -102,6 +103,43 @@ def playlist():
 	con.close()
 	return render_template('playlist.html', records=records, lastupdate=lastupdate)
 		
+@app.route('/likes')
+def like_list():
+	
+	fp = open(last_update, "r")
+	lastupdate = fp.read()
+	fp.close()
+	
+	con, cur = dbconn()
+	sql = "SELECT * FROM like ORDER BY dt DESC LIMIT %d" % limit
+	cur.execute(sql)
+	res = cur.fetchall()
+	
+	ret = []
+	for e in res:
+		sql = """SELECT * 
+		         FROM playlist 
+		         WHERE dt < %d and dt > %d 
+		         ORDER BY dt DESC 
+		         LIMIT 1""" % (e[1], e[1]-60*60*8)
+		cur.execute(sql)
+		row = cur.fetchone()
+
+		r = []
+		r.append(str(row[0]))
+		r.append(quote_plus(row[2].encode('utf8') + " " + row[3].encode('utf8')))
+		r.append(str(datetime.fromtimestamp(row[1]).strftime('%d.%m.%y %H:%M')))
+		r.append(unicode(row[2]))
+		r.append(unicode(row[3]))
+		r.append(unicode(row[4]))
+		r.append(row[5])
+		ret.append(r)
+
+		
+	con.close()
+	return render_template('playlist.html', records=ret, lastupdate=lastupdate)
+	return jsonify({"res": ret})
+		
 if __name__ == "__main__":
 	
 	# observe template and static file changes 
@@ -115,4 +153,5 @@ if __name__ == "__main__":
 					extra_files.append(filename)
 
 
-	app.run(debug=True, extra_files=extra_files) 
+	app.run(debug=True, extra_files=extra_files)
+	#app.run()  

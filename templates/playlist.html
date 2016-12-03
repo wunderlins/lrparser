@@ -4,11 +4,30 @@
 <head>
 	<meta charset="utf-8">
 	<title>l-r.com playlist</title>
-	<link rel="stylesheet" href="static/playlist.css"> 
+	<link rel="stylesheet" href="static/playlist.css">
+	<script type="application/javascript">
+		var page ='{{ request.endpoint }}'
+		function init() {
+			//document.getElementById(page).disabled = true;
+			document.getElementById(page).style.borderStyle = 'inset';
+		}
+	</script>
 </head>
 
-<body>
-<button onclick="window.open('{{url_for('like')}}')"><img src="static/like.png" class="like" alt="Like"/> Current</button>
+<body onload="init()">
+
+<button id="playlist" onclick="document.location.href='{{url_for('playlist')}}'">
+	Playlist
+</button>
+
+<button id="like_list" onclick="document.location.href='{{url_for('like_list')}}'">
+	Likes
+</button>
+
+<button onclick="window.open('{{url_for('like')}}', 'like')">
+	<img src="static/like.png" class="like" alt="Like"/> Current
+</button>
+
 Last Updated: {{lastupdate}}
 <table class="playlist">
 	<thead>
