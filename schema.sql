@@ -15,3 +15,8 @@ CREATE TABLE playlist(
    cover_id INTEGER
 );
 
+CREATE TABLE like(
+   id INTEGER PRIMARY KEY AUTOINCREMENT,
+   dt INTEGER -- unix timestamp
+);
+
