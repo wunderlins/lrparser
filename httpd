@@ -42,7 +42,7 @@ def csv():
 	return Response(buffer, mimetype='text/plain')
 
 
-@app.route('/cover/<int:id>')
+@app.route('/cover/<int:id>', methods=['GET', 'HEAD'])
 def cover(id):
 	con, cur = dbconn()
 	sql = "SELECT size, contenttype, data FROM covers WHERE id = ?"
@@ -52,6 +52,16 @@ def cover(id):
 		abort(404)
 	
 	response = Response(rec[2], mimetype=rec[1])
+	
+	"""
+	response.headers.add('Last-Modified', 'Wed, 21 Oct 2015 07:28:00 GMT')
+	response.headers.add('Cache-Control', 'public, max-age=31536000')
+	response.headers.add('If-Modified-Since', 'Wed, 21 Oct 2015 07:28:00 GMT')
+	"""
+	
+	response.headers.add('Date', 'Sat, 03 Dec 2016 08:51:59 GMT')
+	response.headers.add('Cache-Control', 'store')
+	response.cache_control.max_age = 31536000
 	response.headers.add('content-length', rec[0])
 	return response
 		
