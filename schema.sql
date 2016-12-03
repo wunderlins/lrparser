@@ -3,7 +3,9 @@ CREATE TABLE covers(
 	name TEXT,
 	contenttype TEXT,
 	size INTEGER,
-	data blob
+	data blob,
+	thumb_data blob,
+	thumb_size INTEGER
 );
 
 CREATE TABLE playlist(

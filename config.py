@@ -22,3 +22,4 @@ base_folder = "/tmp"
 db = "./lounge-radio.sqlite3"
 limit = 100
 last_update = "lastupdate.txt"
+thumbnail_height = 32

@@ -12,6 +12,8 @@ from flask import jsonify
 import sqlite3
 from datetime import datetime
 from urllib import quote_plus
+from PIL import Image
+import StringIO
 from config import *
 
 app = Flask(__name__)
@@ -24,6 +26,24 @@ def dbconn():
 def get_data(cur, step=20, start=0):
 	sql = "SELECT * FROM playlist ORDER BY dt DESC LIMIT %d OFFSET %d" % (step, start)
 	cur.execute(sql)
+
+def create_thumbnail(rawdata):
+	#response = Response(rec[2], mimetype=rec[1])
+	img = StringIO.StringIO(rawdata)
+	image = Image.open(img)
+
+	orig_size = image.size
+	#print orig_size
+	new_height = thumbnail_height
+	new_width = int(round((0.0+orig_size[0])*(new_height/(0.0+orig_size[1]))))
+	#print (new_width, new_height)
+
+	thumbnail = image.resize((new_width, new_height), Image.ANTIALIAS)
+
+	out = StringIO.StringIO()
+	thumbnail.save(out, format=image.format)
+
+	return out.getvalue()
 
 @app.route('/csv')
 def csv():
@@ -42,6 +62,43 @@ def csv():
 		          unicode(row[2]) + "\";\"" + unicode(row[3]) + "\";\"" + "\n"
 	
 	return Response(buffer, mimetype='text/plain')
+
+
+@app.route('/thumbnail/<int:id>', methods=['GET', 'HEAD'])
+def thumbnail(id):
+
+	con, cur = dbconn()
+	sql = "SELECT thumb_size, contenttype, thumb_data FROM covers WHERE id = ?"
+	cur.execute(sql, (id,))
+	rec = cur.fetchone()
+	if rec == None:
+		abort(404)
+	
+	size = rec[0]
+	contenttype = rec[1]
+	data = rec[2]
+	
+	# if the thubnail has not yet been generated, create it
+	if not size:
+		#print "resizing"
+		sql = "SELECT size, contenttype, data FROM covers WHERE id = ?"
+		cur.execute(sql, (id,))
+		rec = cur.fetchone()
+		
+		data = create_thumbnail(rec[2])
+		size = int(len(data))
+		
+		# update covers
+		sql = "UPDATE covers SET thumb_data=?, thumb_size=? WHERE id=?"
+		cur.execute(sql, (sqlite3.Binary(data), size, id))
+		con.commit()
+		
+	response = Response(data, mimetype=contenttype)
+	response.headers.add('Date', 'Sat, 03 Dec 2016 08:51:59 GMT')
+	response.headers.add('Cache-Control', 'public')
+	response.cache_control.max_age = 31536000
+	response.headers.add('Content-Length', size)
+	return response
 
 
 @app.route('/cover/<int:id>', methods=['GET', 'HEAD'])
@@ -153,5 +210,5 @@ if __name__ == "__main__":
 					extra_files.append(filename)
 
 
-	#app.run(debug=True, extra_files=extra_files)
-	app.run(host='0.0.0.0', threaded=True)  
+	app.run(debug=True, extra_files=extra_files)
+	#app.run(host='0.0.0.0', threaded=True)  
