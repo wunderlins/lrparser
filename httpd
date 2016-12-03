@@ -5,6 +5,8 @@ import os
 from flask import Flask
 from flask import Response
 from flask import render_template
+from flask import abort
+
 import sqlite3
 from datetime import datetime
 from urllib import quote_plus
@@ -46,8 +48,12 @@ def cover(id):
 	sql = "SELECT size, contenttype, data FROM covers WHERE id = ?"
 	cur.execute(sql, (id,))
 	rec = cur.fetchone()
+	if rec == None or len(rec[2]) == 0:
+		abort(404)
 	
-	return Response(rec[2], mimetype=rec[1])
+	response = Response(rec[2], mimetype=rec[1])
+	response.headers.add('content-length', rec[0])
+	return response
 		
 @app.route('/')
 def playlist():
@@ -57,7 +63,7 @@ def playlist():
 	fp.close()
 	
 	con, cur = dbconn()
-	get_data(cur, step=200)	
+	get_data(cur, step=100)	
 	
 	res = cur.fetchall()
 	records = []
@@ -69,6 +75,7 @@ def playlist():
 		r.append(unicode(row[2]))
 		r.append(unicode(row[3]))
 		r.append(unicode(row[4]))
+		r.append(row[5])
 		records.append(r)
 	
 	con.close()
