@@ -8,6 +8,7 @@ from flask import render_template
 from flask import abort
 from flask import request
 from flask import jsonify
+from flask import redirect
 
 import sqlite3
 from datetime import datetime
@@ -72,7 +73,7 @@ def thumbnail(id):
 	cur.execute(sql, (id,))
 	rec = cur.fetchone()
 	if rec == None:
-		abort(404)
+		return redirect("/thumbnail/397")
 	
 	size = rec[0]
 	contenttype = rec[1]
@@ -85,8 +86,11 @@ def thumbnail(id):
 		cur.execute(sql, (id,))
 		rec = cur.fetchone()
 		
-		data = create_thumbnail(rec[2])
-		size = int(len(data))
+		try:
+			data = create_thumbnail(rec[2])
+			size = int(len(data))
+		except:
+			return redirect("/thumbnail/397")
 		
 		# update covers
 		sql = "UPDATE covers SET thumb_data=?, thumb_size=? WHERE id=?"
