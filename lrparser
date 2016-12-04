@@ -65,14 +65,19 @@ class scraper:
 		ret = []
 		c=0
 		for t in res:
-			str = t.attrib['title'].encode('utf-8')
-			aStr = str.split(" played @ ")
-			aStrTmp = aStr[1].split(". from Album: ")
-			aStr[1] = aStrTmp[0] 
-			aStr.append(aStrTmp[1])
-			song_band = aStr[0].split(" by ")
-			dt = datetime.strptime(aStr[1], '%d.%m.%Y %H:%M:%S')
-			rec = [dt, song_band[0], song_band[1], aStr[2]]
+			try:
+				str = t.attrib['title'].encode('utf-8')
+				aStr = str.split(" played @ ")
+				aStrTmp = aStr[1].split(". from Album: ")
+				aStr[1] = aStrTmp[0] 
+				aStr.append(aStrTmp[1])
+				song_band = aStr[0].split(" by ")
+				dt = datetime.strptime(aStr[1], '%d.%m.%Y %H:%M:%S')
+				rec = [dt, song_band[0], song_band[1], aStr[2]]
+			except:
+				print etree.tostring(t, pretty_print=True, method="html")
+				print "============================="
+				continue
 		
 			#print rec
 			ret.append(rec)
