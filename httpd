@@ -134,6 +134,32 @@ def like():
 	con.commit();
 	return "saved: %d" % tst
 		
+@app.route('/mobile')
+def mobile():
+	
+	fp = open(last_update, "r")
+	lastupdate = fp.read()
+	fp.close()
+	
+	con, cur = dbconn()
+	get_data(cur, step=50)	
+	
+	res = cur.fetchall()
+	records = []
+	for row in res:
+		r = []
+		r.append(str(row[0]))
+		r.append(quote_plus(row[2].encode('utf8') + " " + row[3].encode('utf8')))
+		r.append(str(datetime.fromtimestamp(row[1]).strftime('%d.%m.%y %H:%M')))
+		r.append(unicode(row[2]))
+		r.append(unicode(row[3]))
+		r.append(unicode(row[4]))
+		r.append(row[5])
+		records.append(r)
+	
+	con.close()
+	return render_template('mobile.html', records=records, lastupdate=lastupdate)
+
 @app.route('/')
 def playlist():
 	
@@ -210,5 +236,5 @@ if __name__ == "__main__":
 					extra_files.append(filename)
 
 
-	#app.run(debug=True, extra_files=extra_files)
-	app.run(host='0.0.0.0', threaded=True)  
+	app.run(debug=True, extra_files=extra_files)
+	#app.run(host='0.0.0.0', threaded=True)  
