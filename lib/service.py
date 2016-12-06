@@ -7,6 +7,28 @@ import logging
 import daemon
 from daemon import pidfile
 
+def scraper_service(logf):
+	### This does the "work" of the daemon
+	print "scraper_service"
+	logger = logging.getLogger('lrparser')
+	logger.setLevel(logging.INFO)
+
+	fh = logging.FileHandler(logf)
+	fh.setLevel(logging.INFO)
+
+	formatstr = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+	formatter = logging.Formatter(formatstr)
+
+	fh.setFormatter(formatter)
+
+	logger.addHandler(fh)
+
+	while True:
+		logger.debug("this is a DEBUG message")
+		logger.info("this is an INFO message")
+		logger.error("this is an ERROR message")
+		time.sleep(5)
+
 def start_daemon(pidf, logf):
 	
 	# change working directory to executable
@@ -14,12 +36,12 @@ def start_daemon(pidf, logf):
 	print bin_dir
 	os.chdir(bin_dir)
 	
-	#with daemon.DaemonContext(
-	#	working_directory=bin_dir,
+	with daemon.DaemonContext(
+		working_directory=bin_dir,
 	#	umask=0o002,
 	#	pidfile=pidfile.TimeoutPIDLockFile(pidf),
-	#) as context:
-	#do_something(logf)	
+	) as context:
+		scraper_service(logf)	
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Example daemon in Python")
