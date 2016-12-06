@@ -164,6 +164,10 @@ def mobile():
 	con.close()
 	return render_template('mobile.html', records=records, lastupdate=lastupdate)
 
+@app.route('/angular')
+def angular():
+	return render_template('angular.html')
+
 @app.route('/')
 def playlist():
 	
@@ -240,5 +244,5 @@ if __name__ == "__main__":
 					extra_files.append(filename)
 
 
-	#app.run(debug=True, extra_files=extra_files)
-	app.run(host='0.0.0.0', threaded=True)  
+	app.run(debug=True, extra_files=extra_files)
+	#app.run(host='0.0.0.0', threaded=True)  
