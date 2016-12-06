@@ -12,8 +12,9 @@ def start_daemon(pidf, logf):
 	bin_dir = os.path.dirname(os.path.realpath(__file__))
 	print bin_dir
 	os.chdir(bin_dir)
+	
 	#with daemon.DaemonContext(
-	#	working_directory='/var/lib/eg_daemon',
+	#	working_directory=bin_dir,
 	#	umask=0o002,
 	#	pidfile=pidfile.TimeoutPIDLockFile(pidf),
 	#) as context:
