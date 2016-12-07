@@ -5,5 +5,20 @@
 	<script src="static/angular.js"></script>
 </head>
 <body ng-controller="appController">	
-	<div ng-view></div>
+	<div ng-view>
+		
+		<table>
+			<tbody>
+				<tr ng-repeat="rec in playlist.records">
+					<td>[[record(rec).id]]</td>
+					<td>[[record(rec).dt]]</td>
+					<td>[[record(rec).song]]</td>
+					<td>[[record(rec).artist]]</td>
+					<td>[[record(rec).album]]</td>
+					<td>[[record(rec).cover_id]]</td>
+				</tr>
+			</tbody>
+		</table>
+		
+	</div>
 </body>

@@ -29,7 +29,10 @@ lrparser.factory("globals", function($window, $http) {
 
 function _appController($scope, $window, fetch_playlist, globals) {
 	//$scope.node = node.data;
-	$scope.tree = []
+	$scope.playlist = {
+		records: null,
+		lastupdate: null
+	}
 	
 	/*
 	$scope.$watch(function(){
@@ -40,22 +43,35 @@ function _appController($scope, $window, fetch_playlist, globals) {
 	*/
 	
 	$scope.get_all = function() {
-		console.log(globals.urls.playlist)
+		//console.log(globals.urls.playlist)
 		fetch_playlist.fetch(globals.urls.playlist, function(response) {
-			$scope.tree = response.data;
-			
+			$scope.playlist = response.data;
+			//console.log($scope.playlist)
 		}, function(response) {
-			$scope.tree = [];
+			$scope.playlist = {
+				records: null,
+				lastupdate: null
+			};
 		});	
 	}
 	
-	/*
-	$scope.init = function(u){
-		globals.urls = u;
-		$scope.get_all();
+	$scope.record = function(rec) {
+		return {
+			id:       rec[0], // INTEGER PRIMARY KEY AUTOINCREMENT,
+			dt:       rec[1], // INTEGER, -- unix timestamp
+			song:     rec[2], // TEXT,
+			artist:   rec[3], // TEXT,
+			album:    rec[4], // TEXT, 
+			cover_id: rec[5], // INTEGER
+		}
 	}
-	*/
+	
+	$scope.init = function(u){
+		;
+	}
 	
 	$scope.get_all();
+	//console.log($scope.playlist.records)
+
 }
 lrparser.controller("appController", ['$scope', '$window', 'fetch_playlist', 'globals', _appController]);
