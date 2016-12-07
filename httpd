@@ -10,6 +10,8 @@ from flask import request
 from flask import jsonify
 from flask import redirect
 
+import json
+import time
 import sqlite3
 from datetime import datetime
 from urllib import quote_plus
@@ -19,12 +21,16 @@ from config import *
 
 app = Flask(__name__)
 
+def tzoffset():
+	offset = time.timezone if (time.localtime().tm_isdst == 0) else time.altzone
+	return offset / 60 / 60 * -1
+
 def dbconn():
 	con = sqlite3.connect(db)
 	cur = con.cursor()
 	return (con, cur)	
 	
-def get_data(cur, step=20, start=0):
+def get_data(cur, step=limit, start=0):
 	sql = "SELECT * FROM playlist ORDER BY dt DESC LIMIT %d OFFSET %d" % (step, start)
 	cur.execute(sql)
 
@@ -45,6 +51,23 @@ def create_thumbnail(rawdata):
 	thumbnail.save(out, format=image.format)
 
 	return out.getvalue()
+
+def format_jsondate(dt):
+	offset = tzoffset()
+	sign = "+"
+	if offset < 0:
+		sign = "-"
+	offset = "{}{:02d}:00".format(sign, offset)
+	
+	return str(dt.replace(microsecond=0).isoformat()) + offset
+
+def parse_local_date(str):
+	return datetime.strptime(str, "%Y-%m-%d %H:%M:%S")
+
+@app.after_request
+def apply_caching(response):
+	response.headers["Server"] = "lrparser 0.1"
+	return response
 
 @app.route('/csv')
 def csv():
@@ -168,6 +191,53 @@ def mobile():
 def angular():
 	return render_template('angular.html')
 
+@app.route('/playlist.json')
+def playlist_json():
+	start  = int(request.args.get('start',  0))
+	step   = int(request.args.get('step',   limit))
+	search = request.args.get('search', None) # unused
+	
+	offset = tzoffset()
+	sign = "+"
+	if offset < 0:
+		sign = "-"
+	offset = "{}{:02d}:00".format(sign, offset)
+	
+	fp = open(last_update, "r")
+	lastupdate = fp.read()
+	fp.close()
+	
+	try:
+		lastupdate = parse_local_date(lastupdate)
+	except:
+		lastupdate = -1
+	
+	con, cur = dbconn()
+	get_data(cur, start=start, step=step)
+	
+	res = cur.fetchall()
+	records = []
+	for row in res:
+		r = []
+		r.append(str(row[0]))
+		r.append(format_jsondate(datetime.fromtimestamp(row[1])))
+		r.append(unicode(row[2]))
+		r.append(unicode(row[3]))
+		r.append(unicode(row[4]))
+		r.append(row[5])
+		records.append(r)
+	
+	con.close()
+	data = {
+		"records":    records, 
+		"lastupdate": format_jsondate(lastupdate)
+	}
+	
+	response=Response(json.dumps(data), content_type='application/json; charset=utf-8')
+	response.status_code=200
+
+	return response
+
 @app.route('/')
 def playlist():
 	
@@ -229,7 +299,7 @@ def like_list():
 		
 	con.close()
 	return render_template('playlist.html', records=ret, lastupdate=lastupdate)
-	return jsonify({"res": ret})
+	#return jsonify({"res": ret})
 		
 if __name__ == "__main__":
 	
