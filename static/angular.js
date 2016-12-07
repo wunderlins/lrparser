@@ -42,6 +42,22 @@ function _appController($scope, $window, fetch_playlist, globals) {
 	});
 	*/
 	
+	$scope.format_date = function(dt) {
+		var day    = (dt.getDate() < 10) ? "0"+dt.getDate(): dt.getDate();
+		var month  = ((dt.getMonth()+1) < 10) ? "0" + (dt.getMonth()+1) : (dt.getMonth()+1);
+		var hour   = (dt.getHours() < 10) ? "0"+dt.getHours(): dt.getHours();
+		var minute = (dt.getMinutes() < 10) ? "0"+dt.getMinutes(): dt.getMinutes();
+		
+		
+		var buffer = ""
+		buffer += day + ".";
+		buffer += month + ".";
+		buffer += dt.getFullYear() + " ";
+		buffer += hour + ":" + minute;
+		 
+		return buffer
+	}
+	
 	$scope.get_all = function() {
 		//console.log(globals.urls.playlist)
 		fetch_playlist.fetch(globals.urls.playlist, function(response) {
