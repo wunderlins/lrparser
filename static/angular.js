@@ -56,9 +56,11 @@ function _appController($scope, $window, fetch_playlist, globals) {
 	}
 	
 	$scope.record = function(rec) {
+		var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+		d.setUTCSeconds(rec[1]);
 		return {
 			id:       rec[0], // INTEGER PRIMARY KEY AUTOINCREMENT,
-			dt:       rec[1], // INTEGER, -- unix timestamp
+			dt:       d, // INTEGER, -- unix timestamp
 			song:     rec[2], // TEXT,
 			artist:   rec[3], // TEXT,
 			album:    rec[4], // TEXT, 

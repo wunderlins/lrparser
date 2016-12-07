@@ -53,6 +53,7 @@ def create_thumbnail(rawdata):
 	return out.getvalue()
 
 def format_jsondate(dt):
+	"""
 	offset = tzoffset()
 	sign = "+"
 	if offset < 0:
@@ -60,7 +61,16 @@ def format_jsondate(dt):
 	offset = "{}{:02d}:00".format(sign, offset)
 	
 	return str(dt.replace(microsecond=0).isoformat()) + offset
-
+	"""
+	
+	"""
+	tst = int(dt.strftime("%s"))
+	utc = datetime.utcfromtimestamp(tst)
+	return int(utc.strftime("%s"))
+	"""
+	
+	return int(dt.strftime("%s")) + (tzoffset() * 60 * 60)
+	
 def parse_local_date(str):
 	return datetime.strptime(str, "%Y-%m-%d %H:%M:%S")
 
