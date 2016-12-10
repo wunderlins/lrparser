@@ -48,10 +48,10 @@ c.childNodes.item(2).childNodes.item(0).childNodes.item(1).click() // pause
 		</style>
   </head>
 
-  <body ng-controller="appController">
+  <body>
 
     <!-- Fixed navbar -->
-    <div class="pos-f-t">
+    <div class="pos-f-t" ng-controller="appController">
       <div class="collapse" id="navbar-header">
         <div class="container bg-inverse p-1">
           <h3>Collapsed content</h3>
@@ -73,7 +73,7 @@ c.childNodes.item(2).childNodes.item(0).childNodes.item(1).click() // pause
 		            <a class="nav-link" href="#">Likes</a>
 		          </li>
 		          <li class="nav-item">
-		            <span class="nav-link"><small><small>{{lastupdate}}</small></small></span>
+		            <span class="nav-link"><small><small>lastupdate</small></small></span>
 		          </li>
 		        </ul>
 					</div>
@@ -83,25 +83,7 @@ c.childNodes.item(2).childNodes.item(0).childNodes.item(1).click() // pause
     </div>
 
     <!-- Begin page content -->
-    <div class="container">
-
-			<div class="media" style="padding-bottom: 0.2em;" ng-repeat="rec in playlist.records">
-				<a class="media-left" target="google_music" href="https://play.google.com/music/listen?u=0#/sr/[[record(rec).id]]">
-					<img class="media-object" width="64" src="/thumbnail/[[record(rec).cover_id]]" alt="Cover" />
-				</a>
-				<div class="media-body">
-					<h5 class="media-heading" style="vertical-align: middle;">
-						[[record(rec).song]] - [[record(rec).artist]]
-					</h5>
-
-					<div>
-						[[format_date(record(rec).dt)]] | [[record(rec).album]]
-					</div>
-					
-				</div>
-			</div>
-
-    </div>
+    <div class="container" ng-view></div>
 
     <footer class="footer footer-dark bg-inverse">
       <div class="container">
@@ -119,6 +101,7 @@ c.childNodes.item(2).childNodes.item(0).childNodes.item(1).click() // pause
     <script src="static/ie10-viewport-bug-workaround.js"></script>
 
 		<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.9/angular.min.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.9/angular-route.min.js"></script>
 		<script src="static/angular.js"></script>
   </body>
 </html>

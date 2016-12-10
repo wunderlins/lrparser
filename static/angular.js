@@ -1,11 +1,22 @@
 "use strict";
-var lrparser = angular.module("lrparser", []);
+var lrparser = angular.module("lrparser", ['ngRoute']);
 
 // Use [[ and ]] for angular templates, flask uses {{ and }}
 lrparser.config(function($interpolateProvider) {
 	$interpolateProvider.startSymbol('[[');
 	$interpolateProvider.endSymbol(']]');
 });
+
+lrparser.config(['$routeProvider',
+	function($routeProvider) {
+		$routeProvider.when(
+			'/', {
+				controller: "appController", // ['$scope', '$window', 'fetch_playlist', 'globals', _appController], 
+				templateUrl:'static/views/main.html'
+			}
+		)
+	}
+]);
 
 lrparser.factory("fetch_playlist", function($window, $http) {
 	var factory = {};

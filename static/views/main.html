@@ -1,1 +1,16 @@
-<b>the</b> view!
+<div class="media" style="padding-bottom: 0.2em;" ng-repeat="rec in playlist.records">
+	<a class="media-left" target="google_music" href="https://play.google.com/music/listen?u=0#/sr/[[record(rec).id]]">
+		<img class="media-object" width="64" src="/thumbnail/[[record(rec).cover_id]]" alt="Cover" />
+	</a>
+	<div class="media-body">
+		<h5 class="media-heading" style="vertical-align: middle;">
+			[[record(rec).song]] - [[record(rec).artist]]
+		</h5>
+
+		<div>
+			[[format_date(record(rec).dt)]] | [[record(rec).album]]
+		</div>
+		
+	</div>
+</div>
+
