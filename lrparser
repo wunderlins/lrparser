@@ -44,7 +44,7 @@ class scraper:
 		if scraper.uuid == None:
 			scraper.uuid = uuid4()
 		
-		ud = urlopen(url)
+		ud = urlopen(url, timeout = 20)
 		scraper.log("Temp file: %s" % scraper.filename())
 		scraper.fd = open(scraper.filename(), "wb+")
 		buffer = ""
@@ -155,8 +155,12 @@ def lxml2str(tree):
 if __name__ == "__main__":
 	
 	# fetch data
-	fd = scraper.fetch()
-	
+	try:
+		fd = scraper.fetch()
+	except urllib2.URLError, e:
+		print "Timeout while fetching data"
+		sys.exit(1)
+		
 	# parse html
 	parser = etree.HTMLParser()
 	tree = etree.parse(fd, parser)
